@@ -1,0 +1,442 @@
+Clase alumno..
+package biblioteca; 
+import java.sql.*;
+import javax.swing.*;
+ 
+public class Alumno {
+  private int codigo;
+  private String nombres;
+  private String apellidos;
+  private String direccion;
+  private String <span id="IL_AD2" class="IL_AD">telefono</span>;
+  private int coddistrito;
+  private String sexo;
+  private <span id="IL_AD7" class="IL_AD">boolean</span> habilitado;
+  private String _distrito;
+ 
+  public Alumno()
+  {
+      codigo=0;
+      nombres="";
+      apellidos="";
+      direccion="";
+      telefono="";
+      coddistrito=0;
+      sexo="";
+      habilitado=false;
+  }
+ 
+  public Alumno(String nombre, String apellido, String _direccion,String phono,int codditri, String sex, boolean habilit )
+  {
+      codigo=0;
+      nombres=nombre;
+      apellidos=apellido;
+      direccion=_direccion;
+      telefono=phono;
+      coddistrito=codditri;
+      sexo=sex;
+      habilitado=habilit;
+  }
+ 
+  public int buscarCodigo()
+  {
+          JOptionPane mensaje=new JOptionPane();
+          Connection ocn=null;
+          Statement consulta1=null;
+          ResultSet lector=null;
+          int resp=-1;
+         try
+          {
+           Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+          }
+          catch(<span id="IL_AD12" class="IL_AD">Exception</span> err)
+          {mensaje.showMessageDialog(null, "El <span id="IL_AD8" class="IL_AD">controlador</span> no cargo correctamente", "Sistema de Biblioteca", JOptionPane.ERROR_MESSAGE);
+          }
+   
+       try
+         {
+             ocn=DriverManager.getConnection("jdbc:sqlserver://casa; databasename=Biblioteca", "sa", "cp246725");
+             consulta1=ocn.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY);
+ 
+             lector=consulta1.executeQuery("select coddistrito from <span id="IL_AD11" class="IL_AD">distritos</span> where distrito='" + _distrito + "'");
+ 
+             lector.next();
+ 
+             if(lector==null)
+             {
+                resp=-1;
+             }
+             else
+             {
+                 resp=Integer.parseInt(lector.getString(1));
+             }
+ 
+             lector.close();
+             ocn.close();
+         }
+         catch(Exception err)
+         {
+            mensaje.showMessageDialog(null, "Error al tratar de <span id="IL_AD1" class="IL_AD">buscar</span> el codigo", "Sistema Biblioteca", JOptionPane.ERROR_MESSAGE);
+         }
+ 
+          return resp;
+  }
+ 
+  public void setDistrito(String distrito)
+  {
+      _distrito=distrito;
+  }
+ 
+  public String getDistrito()
+  {
+      return _distrito;
+  }
+ 
+  public String getApellidos() {
+      return apellidos;
+  }
+ 
+  public void setApellidos(String apellidos) {
+      this.apellidos = apellidos;
+  }
+ 
+  public int getCoddistrito() {
+      return coddistrito;}
+ 
+  public void setCoddistrito(int coddistrito) {
+      this.coddistrito = coddistrito;
+  }
+ 
+  public int getCodigo() {
+      return codigo;
+  }
+ 
+  public void setCodigo(int codigo) {
+      this.codigo = codigo;
+  }
+ 
+  public String getDireccion() {
+      return direccion;
+  }
+ 
+  public void setDireccion(String direccion) {
+      this.direccion = direccion;
+  }
+ 
+  public boolean isHabilitado() {
+      return habilitado;
+  }
+ 
+  public void setHabilitado(boolean habilitado) {
+      this.habilitado = habilitado;
+  }
+ 
+  public String getNombres() {
+      return nombres;
+  }
+ 
+  public void setNombres(String nombres) {
+      this.nombres = nombres;
+  }
+ 
+  public String getSexo() {
+      return sexo;
+  }
+ 
+  public void setSexo(String sexo) {
+      this.sexo = sexo;
+  }
+ 
+  public String getTelefono() {
+      return telefono;
+  }
+ 
+  public void setTelefono(String telefono) {
+      this.telefono = telefono;
+  }
+}
+Una vez diseñada nuestra interface implementamos los métodos: limpiar(), insertarRegistro(), actualizarRegistro(), eliminaRegistro(), cargarData() la cual va a servir para el refrescado de los datos
+package biblioteca;
+ 
+import java.sql.*;
+import javax.swing.*;
+import javax.swing.table.*;
+import java.util.*;
+import java.lang.*;
+ 
+public class frmMantenedorAlumno extends javax.swing.JFrame {
+   Object[][] filas=null;
+   String cod=null;
+ 
+public frmMantenedorAlumno() {
+      initComponents();
+  }
+ 
+private void limpiar()
+  {
+      this.jtxtnombres.setText("");
+      this.jtxtdireccion.setText("");
+      this.jtxtapellidos.setText("");
+      this.jftxttelfono.setText("");
+      this.jcmbdistrito.setSelectedIndex(0);
+      this.jcmbsexo.setSelectedIndex(0);
+      this.jchbhabilitado.setSelected(false);
+  }
+ 
+  private void eliminarRegistro(int codigo)
+  {
+      Connection ocn=null;
+  JOptionPane mensaje=new JOptionPane();
+  Statement <span id="IL_AD4" class="IL_AD">consulta</span>=null;
+ 
+  try
+  {
+       Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+  }
+ 
+  catch(Exception err)
+  {
+      mensaje.showMessageDialog(this, err.getMessage(), "Sistema de Biblioteca", JOptionPane.ERROR_MESSAGE);
+  }
+ 
+  try
+  {
+      ocn=DriverManager.getConnection("jdbc:sqlserver://casa; databasename=Biblioteca", "sa", "cp246725");
+      consulta=ocn.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+       consulta.executeUpdate("delete from alumnos where codusuario=" + codigo);
+       mensaje.showMessageDialog(this, "El alumno se elimino de la Base de Datos", "Sistema Biblioteca",JOptionPane.INFORMATION_MESSAGE);
+       ocn.close();
+  }
+  catch(Exception err)
+  {
+mensaje.showMessageDialog(this, err.getMessage(), "Sistema Biblioteca", JOptionPane.ERROR_MESSAGE);
+  }
+ 
+  }
+ 
+private void actualizarRegistro(Alumno objeto, int codigo)
+{
+  Connection ocn=null;
+  JOptionPane mensaje=new JOptionPane();
+  Statement consulta=null;
+ 
+  try
+  {
+       Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+  }
+  catch(Exception err)
+  {
+      mensaje.showMessageDialog(this, err.getMessage(), "Sistema de Biblioteca", JOptionPane.ERROR_MESSAGE);
+  }
+ 
+  try
+  {
+      ocn=DriverManager.getConnection("jdbc:sqlserver://casa; databasename=Biblioteca", "sa", "cp246725");
+      consulta=ocn.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+       consulta.executeUpdate("update alumnos set nombres='" + objeto.getNombres() + "',apellidos='" + objeto.getApellidos() + "',direccion='" + objeto.getDireccion() + "',phono='" +
+       objeto.getTelefono() + "',coddistrito=" + objeto.buscarCodigo() + ",sexo='" + objeto.getSexo() +
+               "',habilitado=" + (objeto.isHabilitado()?1:0) + " where codusuario=" + codigo);
+       mensaje.showMessageDialog(this, "El alumno " + objeto.getApellidos().trim().toUpperCase() + ", "  + objeto.getNombres().trim().toUpperCase() + " se actualizo correctamente", "Sistema Biblioteca",JOptionPane.INFORMATION_MESSAGE);
+       ocn.close();
+  }
+ 
+  catch(Exception err)
+  {
+      mensaje.showMessageDialog(this, err.getMessage(), "Sistema Biblioteca", JOptionPane.ERROR_MESSAGE);
+  }
+ 
+}
+ 
+private void insertarRegistro(Alumno objeto)
+{
+  Connection ocn=null;
+  JOptionPane mensaje=new JOptionPane();
+  Statement consulta=null;
+  try
+  {
+       Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+  }
+  catch(Exception err)
+  {
+      mensaje.showMessageDialog(this, err.getMessage(), "Sistema de Biblioteca", JOptionPane.ERROR_MESSAGE);
+  }
+ try
+  {
+      ocn=DriverManager.getConnection("jdbc:sqlserver://casa; databasename=Biblioteca", "sa", "cp246725");
+      consulta=ocn.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+       consulta.executeUpdate("insert into alumnos(nombres,apellidos,direccion,phono,coddistrito,sexo,habilitado) " +
+               "values('" + objeto.getNombres() + "','" + objeto.getApellidos() + "','" + objeto.getDireccion() +
+               "','" + objeto.getTelefono() + "'," + objeto.buscarCodigo() + ",'" + objeto.getSexo() + "'," + objeto.isHabilitado()?1:0) + ")");
+       mensaje.showMessageDialog(this, "El alumno " + objeto.getApellidos().trim().toUpperCase() + ", "  + objeto.getNombres().trim().toUpperCase() + " se <span id="IL_AD5" class="IL_AD">registro</span> correctamente", "Sistema Biblioteca",JOptionPane.INFORMATION_MESSAGE);
+ 
+  }
+ 
+  catch(Exception err)
+  {
+      mensaje.showMessageDialog(this, err.getMessage(), "Sistema Biblioteca", JOptionPane.ERROR_MESSAGE);
+  }
+}
+ 
+private void cargarData()
+{
+   JOptionPane mensaje=new JOptionPane();
+  Connection ocn=null;
+  Statement consulta1=null;
+   Statement consulta2=null;
+    ResultSet lector=null;
+    ResultSet cantfilas=null;
+ 
+  try
+  {
+       Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+  }
+  catch(Exception err)
+  {
+      mensaje.showMessageDialog(this, "El controlador no cargo correctamente", "Sistema de Biblioteca", JOptionPane.ERROR_MESSAGE);
+  }
+ 
+   try
+   {
+      ocn=DriverManager.getConnection("jdbc:sqlserver://casa; databasename=Biblioteca", "sa", "cp246725");
+      consulta2=ocn.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY);
+      consulta1=ocn.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY);
+      lector=null;
+      lector=consulta2.executeQuery("select codusuario, nombres, apellidos, direccion, phono, d.distrito, " +
+              "case when sexo='F' then 'FEMENINO' else 'MASCULINO' end as sexo, habilitado " +
+              "from dbo.Alumnos a inner join distritos d on a.coddistrito=d.coddistrito");
+       cantfilas=consulta1.executeQuery("select count(*) from alumnos");
+        cantfilas.next();
+        Object[] columnas={"Codigos","Nombres","Apellidos","Dirección","Teléfono","Distrito","Sexo","Habilitado"};
+        filas=new Object[cantfilas.getInt(1)+1][8];
+      int c=0;
+      int i=0;
+      while(lector.next())
+      {
+              filas[i][0]="" + lector.getInt(1);
+              filas[i][1]="" + lector.getString(2);
+filas[i][2]="" + lector.getString(3);
+              filas[i][3]="" + lector.getString(4);
+              filas[i][4]="" + lector.getString(5);
+              filas[i][5]="" + lector.getString(6);
+              filas[i][6]="" + lector.getString(7);
+              filas[i][7]="" + lector.getBoolean(8);
+          i++;
+      }
+      DefaultTableModel mydata=new DefaultTableModel(filas,columnas);
+      this.jTable1.setModel(mydata);
+      this.jTable1.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+      this.jtxtdireccion.setLineWrap(true);
+      lector.close();
+      ocn.close();
+   }
+  catch(Exception err)
+  {
+      mensaje.showMessageDialog(this, err.getMessage(), "Sistema Biblioteca", JOptionPane.ERROR_MESSAGE);
+  }
+}
+ 
+private void formWindowOpened(java.awt.event.WindowEvent evt) {                   
+// TODO add your handling code here:
+ JOptionPane mensaje=new JOptionPane();
+  Connection ocn=null;
+  Statement consulta=null;
+     ResultSet lector=null;
+ 
+  try
+  {
+       Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+  }
+  catch(Exception err)
+  {
+      mensaje.showMessageDialog(this, err.getMessage(), "Sistema de Biblioteca", JOptionPane.ERROR_MESSAGE);
+  }
+ 
+  try
+  {
+      ocn=DriverManager.getConnection("jdbc:sqlserver://casa; databasename=Biblioteca", "sa", "cp246725");
+      consulta=ocn.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY);
+      lector=consulta.executeQuery("select distrito from distritos order by distrito");
+      while(lector.next())
+      {
+      this.jcmbdistrito.addItem(lector.getString(1));
+      }
+      this.jcmbsexo.addItem("MASCULINO");
+      this.jcmbsexo.addItem("FEMENINO");
+      this.cargarData();
+      lector.close();
+      ocn.close();
+}
+  catch(Exception err)
+  {
+      mensaje.showMessageDialog(this, err.getMessage(), "Sistema Biblioteca", JOptionPane.ERROR_MESSAGE);
+  }
+}                  
+ 
+private void jbtnmodificarMouseClicked(java.awt.event.MouseEvent evt) {                            
+// TODO add your handling code here:
+  cod=filas[this.jTable1.getSelectedRow()][0].toString();
+  this.jtxtnombres.setText(filas[this.jTable1.getSelectedRow()][1].toString());
+  this.jtxtapellidos.setText(filas[this.jTable1.getSelectedRow()][2].toString());
+  this.jtxtdireccion.setText(filas[this.jTable1.getSelectedRow()][3].toString());
+  this.jftxttelfono.setText(filas[this.jTable1.getSelectedRow()][4].toString());
+  this.jcmbdistrito.setSelectedItem(filas[this.jTable1.getSelectedRow()][5].toString());
+  this.jcmbsexo.setSelectedItem(filas[this.jTable1.getSelectedRow()][6].toString());
+  this.jchbhabilitado.setSelected(Boolean.parseBoolean(filas[this.jTable1.getSelectedRow()][7].toString()));
+}                           
+ 
+private void jbtnagregarMouseClicked(java.awt.event.MouseEvent evt) {                          
+// TODO add your handling code here:
+  Alumno objeto=new Alumno();
+  objeto.setNombres(this.jtxtnombres.getText());
+  objeto.setApellidos(this.jtxtapellidos.getText());
+  objeto.setDireccion(this.jtxtdireccion.getText());
+  objeto.setDistrito(this.jcmbdistrito.getSelectedItem().toString());
+  if(this.jcmbsexo.getSelectedItem().toString().compareTo("MASCULINO")==0)
+  {
+      objeto.setSexo("M");
+  }
+  else
+  {
+      objeto.setSexo("F");
+  }
+  objeto.setTelefono(this.jftxttelfono.getText());
+  objeto.setHabilitado(this.jchbhabilitado.isSelected());
+  this.insertarRegistro(objeto);
+  this.limpiar();
+  this.cargarData();
+}                         
+ 
+private void jbtnguardarMouseClicked(java.awt.event.MouseEvent evt) {                          
+// TODO add your handling code here:
+   Alumno objeto=new Alumno();
+  objeto.setNombres(this.jtxtnombres.getText());
+  objeto.setApellidos(this.jtxtapellidos.getText());
+  objeto.setDireccion(this.jtxtdireccion.getText());
+  objeto.setDistrito(this.jcmbdistrito.getSelectedItem().toString());
+  if(this.jcmbsexo.getSelectedItem().toString().compareTo("MASCULINO")==0)
+  {
+     objeto.setSexo("M");
+  }
+else
+  {
+      objeto.setSexo("F");
+  }
+  objeto.setTelefono(this.jftxttelfono.getText());
+  objeto.setHabilitado(this.jchbhabilitado.isSelected());
+  this.actualizarRegistro(objeto, Integer.parseInt(cod));
+  this.limpiar();
+  this.cargarData();
+}                         
+ 
+private void jbtnsalirMouseClicked(java.awt.event.MouseEvent evt) {                        
+// TODO add your handling code here:
+  System.exit(0);
+}                       
+ 
+private void jbnteliminarMouseClicked(java.awt.event.MouseEvent evt) {                           
+// TODO add your handling code here:
+  this.eliminarRegistro(Integer.parseInt(cod));
+  this.limpiar();
+  this.cargarData();
+}
+}
